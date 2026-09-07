@@ -18,10 +18,6 @@ What: La variable de entorno AWAY_AFTER_SECONDS (default 300) controla en el ser
 
 What: Radio y tope de burbujas se configuran por env var: BUBBLE_RADIUS_PX (default = 2 × tilewidth del mapa, 64px con tiles de 32px) y BUBBLE_MAX_MEMBERS (default 6). · Why: — · Where: apps/server/.env.example, apps/server/src/config.ts. · Learned: derivar el default del tamaño de tile del mapa en vez de hardcodear px hace que '2 tiles' siga siendo 2 tiles si el mapa cambia de escala. <!-- id: ad7b81b0-f714-46dc-bfac-6327a3363b23-5 -->
 
-## El stack de desarrollo arranca con `npm run dev` desde la raíz del monorepo; cliente Vite…
+## Las herramientas de generación de assets (tools/recolor-avatars.py, tools/person-avatars.…
 
-What: El stack de desarrollo arranca con `npm run dev` desde la raíz del monorepo; cliente Vite en `:5173`, servidor Colyseus en `:2567`. Las variables de entorno del servidor se inyectan automáticamente desde `.env.development` al arrancar. · Why: — · Where: `apps/client/vite.config.ts`, `apps/server/src/index.ts`, `.env.development` <!-- id: ce94ff8e-e247-4c82-a62f-127c7251fb4c-10 -->
-
-## La identidad del jugador se persiste en `localStorage` bajo la clave `vto.identity` como…
-
-What: La identidad del jugador se persiste en `localStorage` bajo la clave `vto.identity` como JSON `{name: string, avatar: string}`. · Why: El cliente la lee al arrancar para saltear el modal de entrada si ya existe una identidad guardada. · Where: `apps/client/src/` (leído en Bootstrap antes de mostrar el modal de entrada) <!-- id: ce94ff8e-e247-4c82-a62f-127c7251fb4c-6 -->
+What: Las herramientas de generación de assets (tools/recolor-avatars.py, tools/person-avatars.py) requieren Python 3 + Pillow. En macOS el pip del sistema bloquea instalaciones globales; se usa un venv local: python3 -m venv .venv-assets && .venv-assets/bin/pip install pillow. · Why: El venv es solo para desarrollo; el resultado (PNG) se versiona. · Where: virtual-taller-office/tools/. <!-- id: ce94ff8e-e247-4c82-a62f-127c7251fb4c-13 -->

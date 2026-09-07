@@ -74,10 +74,34 @@ What: La lógica de agrupamiento por proximidad vive en un módulo puro apps/ser
 
 What: OfficeState replica también bubbleRadius y bubbleMaxMembers (no solo la lista de burbujas) como campos de solo lectura. · Why: así el cliente dibuja el radio real y detecta 'burbuja llena' con los mismos valores que usa el servidor para decidir, en vez de hardcodear una copia que puede desincronizarse. · Where: packages/shared/src/schema.ts, apps/server/src/config.ts. <!-- id: ad7b81b0-f714-46dc-bfac-6327a3363b23-4 -->
 
-## El catálogo de avatares vive en `packages/shared/src/avatars.ts` (array `AVATARS`), y el…
+## El catálogo de avatares vive en packages/shared/src/avatars.ts y exporta AVATARS, AVATAR_…
 
-What: El catálogo de avatares vive en `packages/shared/src/avatars.ts` (array `AVATARS`), y el cliente los auto-descubre desde ahí — no hay hardcoding de IDs en las escenas de Phaser. · Why: Centralizar el catálogo en `shared` permite que server y client compartan la misma fuente de verdad sin duplicar la lista. · Where: `packages/shared/src/avatars.ts`, `apps/client/src/game/Bootstrap.ts` <!-- id: ce94ff8e-e247-4c82-a62f-127c7251fb4c-1 -->
+What: El catálogo de avatares vive en packages/shared/src/avatars.ts y exporta AVATARS, AVATAR_IDS, DEFAULT_AVATAR e isAvatarId. · Why: Añadir un id aquí auto-cablea el selector UI (ui/entry.ts recorre AVATARS), el preload de BootScene, la validación del servidor y los thumbnails (avatarThumb.ts), sin tocar ningún archivo más. · Where: packages/shared/src/avatars.ts; carga efectiva en apps/client/src/game/BootScene.ts. · Learned: Cada personaje nuevo o avatar del equipo solo requiere una entrada en este catálogo + el PNG en avatars/. <!-- id: ce94ff8e-e247-4c82-a62f-127c7251fb4c-1 -->
 
-## El sprite sheet de avatar sigue este layout de 52 frames (fila única, 32×48 px c/u): fram…
+## El formato de cada hoja de sprites de avatar es 1664×48 px (una fila, 52 frames de 32×48…
 
-What: El sprite sheet de avatar sigue este layout de 52 frames (fila única, 32×48 px c/u): frames 0–23 → idle en 4 direcciones (R/U/L/D, 6 frames c/d), frames 24–47 → walk en 4 direcciones (R/U/L/D, 6 frames c/d), frames 48–51 → sentado (4 frames). · Why: — · Where: `apps/client/src/anims/CharacterAnims.ts`, `packages/shared/src/avatars.ts` <!-- id: ce94ff8e-e247-4c82-a62f-127c7251fb4c-9 -->
+What: El formato de cada hoja de sprites de avatar es 1664×48 px (una fila, 52 frames de 32×48 px). Layout LimeZu: idle R/U/L/D frames 0–23, walk R/U/L/D frames 24–47, sentado frames 48–51; 6 frames por animación. · Why: Lo impone el motor Phaser y la función createAvatarAnims; cambiar este contrato requiere tocar ambas cosas. · Where: apps/client/src/game/avatarAnims.ts; packages/shared/src/avatars.ts (AVATAR_FRAME, FRAMES_PER_ANIM). · Learned: El work order decía '4 frames por animación'; el código real exige 6 — siempre verificar contra el código, no contra el enunciado. <!-- id: ce94ff8e-e247-4c82-a62f-127c7251fb4c-2 -->
+
+## officeMap.ts renderiza objetos Tiled que tienen gid como sprites con depth = obj.y
+
+What: officeMap.ts renderiza objetos Tiled que tienen gid como sprites con depth = obj.y. La colisión no depende de si el objeto tiene geometría: solo colisiona si el objeto o la capa tiene la propiedad collides:true; el cuerpo físico de muebles vive en la capa MueblesColision separada. · Why: Por esto un sprite decorativo sin esa propiedad nunca bloquea, sin importar su posición. · Where: apps/client/src/game/officeMap.ts (renderObjects / objectCollides). · Learned: Para que un objeto sea puramente decorativo, basta con no marcar collides:true; no hace falta ningún flag extra. <!-- id: ce94ff8e-e247-4c82-a62f-127c7251fb4c-7 -->
+
+## El mapa es 40×30 tiles a 32 px = 1280×960 unidades de mundo
+
+What: El mapa es 40×30 tiles a 32 px = 1280×960 unidades de mundo. La zona Recepción ocupa x 640–1056, y 96–288; el spawn del jugador es (848, 208). · Why: Referencia para posicionar assets decorativos programáticamente (logo, carteles) sin abrir Tiled. · Where: apps/client/src/game/officeMap.ts (getZones, TILE_SIZE); mapa Tiled en apps/client/public/assets/map/. <!-- id: ce94ff8e-e247-4c82-a62f-127c7251fb4c-8 -->
+
+## El servidor (`ChatRelay` en apps/server/src/chat.ts) calcula los destinatarios de un mens…
+
+What: El servidor (`ChatRelay` en apps/server/src/chat.ts) calcula los destinatarios de un mensaje como los miembros de la burbuja del remitente **en el instante del envío**, vía `clients.getById`; el cliente nunca envía `bubbleId` ni pide membresía · Why: la membresía de burbujas es autoridad exclusiva del servidor (schema Bubble/Player.bubbleId), consistente con la convención ya existente de que el cliente nunca fuerza membresía · Where: apps/server/src/chat.ts, apps/server/src/OficinaTallerRoom.ts <!-- id: d7c54432-554e-41a6-b074-d57ca352d8d9-1 -->
+
+## `ChatRelay` (apps/server/src/chat.ts) aplica rate-limit por jugador además de resolver de…
+
+What: `ChatRelay` (apps/server/src/chat.ts) aplica rate-limit por jugador además de resolver destinatarios por membresía de burbuja, para evitar spam de mensajes · Why: — · Where: apps/server/src/chat.ts <!-- id: d7c54432-554e-41a6-b074-d57ca352d8d9-10 -->
+
+## El globo de diálogo sobre el avatar (`Avatar.say()`) se implementa con un `Phaser.Text` t…
+
+What: El globo de diálogo sobre el avatar (`Avatar.say()`) se implementa con un `Phaser.Text` temporal que desaparece solo tras unos segundos, desacoplado del panel de chat que sí mantiene historial local · Why: — · Where: apps/client/src/game/Avatar.ts <!-- id: d7c54432-554e-41a6-b074-d57ca352d8d9-8 -->
+
+## La identidad del usuario persiste en localStorage con clave 'vto.identity', valor JSON.st…
+
+What: La identidad del usuario persiste en localStorage con clave 'vto.identity', valor JSON.stringify({name, avatar}). Al cargar, ui/entry.ts valida el campo avatar vía isAvatarId y cae a DEFAULT_AVATAR si el id es desconocido. · Why: Es el mecanismo de persistencia de avatar entre recargas (criterio 7). Útil para debugging manual: localStorage.setItem('vto.identity', JSON.stringify({name:'Test', avatar:'adam'})) + recarga. Para tests Playwright multi-pestaña en modo ?debug, se puede fijar antes de navegar. · Where: apps/client/src/ui/entry.ts (STORAGE_KEY); packages/shared/src/avatars.ts (isAvatarId, DEFAULT_AVATAR). <!-- id: ce94ff8e-e247-4c82-a62f-127c7251fb4c-15 -->

@@ -74,14 +74,30 @@ What: El bloque de burbuja del panel lateral tiene tres estados derivados direct
 
 What: La membresía de burbujas nunca se pide ni se fuerza desde el cliente: no existe ningún mensaje cliente→servidor para burbujas; todo el estado (schema Bubble con id/x/y/members y Player.bubbleId) se replica solo servidor→cliente vía @colyseus/schema. · Why: requisito explícito de que el cliente no puede forzar su pertenencia a una burbuja. · Where: packages/shared/src/schema.ts. <!-- id: ad7b81b0-f714-46dc-bfac-6327a3363b23-3 -->
 
-## Para agregar un avatar de persona al catálogo: generar el PNG 1664×48 con `tools/person-a…
+## El test apps/server/test/identity.test.ts afirma expect(AVATARS).toHaveLength(N); añadir…
 
-What: Para agregar un avatar de persona al catálogo: generar el PNG 1664×48 con `tools/person-avatars.py`, copiarlo a `apps/client/public/assets/avatars/<id>.png`, añadir la entrada a `packages/shared/src/avatars.ts`, y actualizar el conteo en `apps/server/test/identity.test.ts`. · Why: — · Where: `tools/person-avatars.py`, `packages/shared/src/avatars.ts`, `apps/server/test/identity.test.ts` <!-- id: ce94ff8e-e247-4c82-a62f-127c7251fb4c-4 -->
+What: El test apps/server/test/identity.test.ts afirma expect(AVATARS).toHaveLength(N); añadir avatares al catálogo exige actualizar ese número. · Why: El test valida la integridad del catálogo compartido y fallará si se agrega una entrada sin actualizar la aserción. · Where: apps/server/test/identity.test.ts. · Learned: Al agregar un avatar, buscar 'toHaveLength' en esa suite y sumar 1. <!-- id: ce94ff8e-e247-4c82-a62f-127c7251fb4c-10 -->
 
-## El logo pixel art de Taller se almacena en `apps/client/public/assets/logo/taller-logo-pi…
+## El historial de chat de una burbuja se mantiene solo en el cliente (apps/client/src/ui/ch…
 
-What: El logo pixel art de Taller se almacena en `apps/client/public/assets/logo/taller-logo-pixel.png`, dimensiones 160×32 px (5×1 tiles de 32 px), fondo transparente, paleta reducida con contorno oscuro para legibilidad sobre pisos claros y oscuros. · Why: — · Where: `apps/client/public/assets/logo/taller-logo-pixel.png` <!-- id: ce94ff8e-e247-4c82-a62f-127c7251fb4c-5 -->
+What: El historial de chat de una burbuja se mantiene solo en el cliente (apps/client/src/ui/chat.ts), arranca vacío al entrar a la burbuja y se limpia al salir de ella · Why: cumple el requisito de que quien se suma a una burbuja ya en curso no vea mensajes previos a su ingreso, y de que salir de la burbuja borre el historial local · Where: apps/client/src/ui/chat.ts <!-- id: d7c54432-554e-41a6-b074-d57ca352d8d9-2 -->
 
-## Todo archivo `.md` y `.ts` nuevo o editado debe pasar `npx prettier --write` antes de com…
+## Los mensajes de chat se sanitizan con `sanitizeChatText` (quita invisibles/caracteres de…
 
-What: Todo archivo `.md` y `.ts` nuevo o editado debe pasar `npx prettier --write` antes de commit; las tablas markdown en docs se reformatean automáticamente y rompen `prettier --check` si se escriben manualmente sin alineación exacta. · Why: — · Where: `docs/`, raíz del repo · Learned: Correr `npm run format:check` (o `prettier --check .`) antes de dar el trabajo por terminado. <!-- id: ce94ff8e-e247-4c82-a62f-127c7251fb4c-8 -->
+What: Los mensajes de chat se sanitizan con `sanitizeChatText` (quita invisibles/caracteres de control) y se valida longitud con `CHAT_MAX_LENGTH=240` antes de enviar; el render en el cliente usa `textContent` (nunca innerHTML) · Why: evita inyección de HTML/scripts en el panel de chat, cumpliendo el requisito de protección contra contenido malicioso · Where: packages/shared/src/chat.ts, apps/client/src/ui/chat.ts <!-- id: d7c54432-554e-41a6-b074-d57ca352d8d9-3 -->
+
+## El aviso de mensaje entrante fuera de foco (blip de audio vía WebAudio, contador en el tí…
+
+What: El aviso de mensaje entrante fuera de foco (blip de audio vía WebAudio, contador en el título de la pestaña, resalte del panel) solo se dispara cuando la ventana no tiene el foco · Why: — · Where: apps/client/src/ui/notify.ts <!-- id: d7c54432-554e-41a6-b074-d57ca352d8d9-9 -->
+
+## Los tests de chat del servidor (apps/server/test/chat.test.ts) corren contra una instanci…
+
+What: Los tests de chat del servidor (apps/server/test/chat.test.ts) corren contra una instancia real de `BubbleManager`, no mocks, para validar la membresía de burbuja de forma realista · Why: — · Where: apps/server/test/chat.test.ts <!-- id: d7c54432-554e-41a6-b074-d57ca352d8d9-11 -->
+
+## El param ?debug expone window.__vto (game, connection, room, escena) y mantiene el loop d…
+
+What: El param ?debug expone window.__vto (game, connection, room, escena) y mantiene el loop de Phaser corriendo en pestañas de fondo. · Why: Las pestañas normales pausan el loop cuando pierden foco y la sala Colyseus se desconecta; ?debug evita esto. · Where: apps/client/src/main.ts. · Learned: Para tests Playwright multi-pestaña que requieran estado de red sincronizado, siempre usar ?debug en todas las pestañas. <!-- id: ce94ff8e-e247-4c82-a62f-127c7251fb4c-11 -->
+
+## Todos los assets externos o derivados se documentan en docs/licencias-assets.md (origen,…
+
+What: Todos los assets externos o derivados se documentan en docs/licencias-assets.md (origen, licencia, restricciones). · Why: Es la fuente de verdad para auditorías de licencia y para decidir si el repo puede ser público. · Where: virtual-taller-office/docs/licencias-assets.md. · Learned: Cada asset nuevo (tileset, avatar, logo) necesita una fila en esa tabla antes de hacer merge. <!-- id: ce94ff8e-e247-4c82-a62f-127c7251fb4c-12 -->
